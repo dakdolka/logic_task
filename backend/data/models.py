@@ -20,12 +20,14 @@ class Info(Base):
     w: Mapped[Optional[int]] = mapped_column(default=None)
     l: Mapped[Optional[int]] = mapped_column(default=None)
     is_packed: Mapped[pack]
+    orders: Mapped[list['OrdderConstructor']] = relationship(back_populates="info")
     
 
 
 class Order(Base):
     __tablename__ = "orders"
     id: Mapped[int] = mapped_column(primary_key=True)
+    order_constructor: Mapped[list['OrdderConstructor']] = relationship(back_populates="order")
     
 
 class OrdderConstructor(Base):
@@ -34,6 +36,8 @@ class OrdderConstructor(Base):
     info_id: Mapped[str_256] = mapped_column(ForeignKey("info.id"), primary_key=True)
     amount: Mapped[int]
     price: Mapped[int]
+    order: Mapped[Order] = relationship(back_populates="order_constructor")
+    info: Mapped[Info] = relationship(back_populates="orders")
     
 
     

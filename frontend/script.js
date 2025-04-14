@@ -20,24 +20,24 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Функция для отправки файлов
-  function uploadFiles(file1, file2) {
-    const formData = new FormData();
-    formData.append('file1', file1);
-    formData.append('file2', file2);
+    function uploadFiles(file1, file2) {
+      const formData = new FormData();
+      formData.append('file1', file1);
+      formData.append('file2', file2);
 
-    fetch('http://127.0.0.1:8000/', {
-      method: 'POST',
-      body: formData
-    })
-    .then(res => res.json())
-    .then(data => {
-      alert(data.message);  // Можешь изменить на alert или просто выполнить другие действия
-    })
-    .catch(err => {
-      console.error(err);
-      alert('Ошибка при загрузке');
-    });
-  }
+      fetch('http://127.0.0.1:8000/api/upload', {
+        method: 'POST',
+        body: formData
+      })
+      .then(res => res.json())
+      .then(data => {
+        alert(data.message);  // Можешь изменить на alert или просто выполнить другие действия
+      })
+      .catch(err => {
+        console.error(err);
+        alert('Ошибка при загрузке');
+      });
+    }
 
   // Обработчик для кнопки отправки файлов
   uploadButton.addEventListener('click', function() {
@@ -123,13 +123,13 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 
-elem = document.getElementById('time');
+// elem = document.getElementById('time');
 
-async function update() {
-    let res = await fetch('/api/test');
-    let json = await res.json();
-    elem.innerHTML = json.message;
-}
+// async function update() {
+//     let res = await fetch('/api/upload');
+//     let json = await res.json();
+//     elem.innerHTML = json.message;
+// }
 
 
-setInterval(update, 1000);
+// setInterval(update, 1000);

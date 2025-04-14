@@ -22,25 +22,38 @@ class Orm:
     @staticmethod
     async def insert_or_upd_info(info):
         async with async_session_factory() as session:
-            print(info.columns)
             info = info[['Наименование', 'Артикул', 'Упаковка высота (мм)', "Упаковка длина (см)", "Упаковка ширина (см)", "УПАКОВКА FBO (Общие)" ]]
             data = info.values.tolist()
+            dop = []
             for i in range(len(data)):
-                data[i] = {
-                    'id': data[i][1],
-                    'name': data[i][0],
-                    'h': data[i][2] if not pd.isna(data[i][2]) else None,
-                    'w': data[i][4] if not pd.isna(data[i][4]) else None,
-                    'l': data[i][3] if not pd.isna(data[i][3]) else None,
-                    'is_packed': data[i][5]
-                }
+                # print(data[i])
+                # exit()
+                if not pd.isna(data[i][1]):
+                    data[i] = {
+                        'id': data[i][1] ,
+                        'name': data[i][0] if not pd.isna(data[i][0]) else '0',
+                        'h': data[i][2] if not pd.isna(data[i][2]) else 0,
+                        'w': data[i][4] if not pd.isna(data[i][4]) else 0,
+                        'l': data[i][3] if not pd.isna(data[i][3]) else 0,
+                        'is_packed': data[i][5]
+                    }
+                    dop.append(data[i])
+            data = dop
             temp_inf = await session.execute(select(Info.id))
             temp_inf = temp_inf.scalars().all()
+            cnt = 0
+            dop = []
             for row in data:
+                # print(row)
+                if row['id'] in dop and (row['id'] == 'insp' or row['id'] == 'sh' or row['id'] == 0 or row['id'] == '23362' or row['id'] == '11332' or row['id'] == 'sf1'):
+                    # raise HTTPException(status_code=400, detail="В номенклатуре присутствуют повторяющиеся артикулы")
+                    continue
                 if row['id'] in temp_inf:
-                    await session.execute(update(Info).where(Info.id == row['id']).values(row))
+                    await session.execute(update(Info).where(Info.id == row['id']).values(**row))
+                    dop.append(row['id'])
                 else:
-                    await session.execute(insert(Info).values(row))
+                    await session.execute(insert(Info).values(**row))
+                    dop.append(row['id'])
             await session.commit()
             
     @staticmethod
@@ -67,5 +80,25 @@ class Orm:
                 if row['info_id'] in temp_inf:
                     await session.execute(insert(OrdderConstructor).values(row))
             await session.commit()
+            return order_id
+            
+    
+    
+    @staticmethod
+    async def calc_time_and_volume(order_id):
+        async with async_session_factory() as session:
+            query = (
+                select(OrdderConstructor).where(OrdderConstructor.order_id == order_id).options(
+                    selectinload(OrdderConstructor.info))
+                )
+            result = await session.execute(query)
+            result = result.scalars().all()
+            summ = 0
+            for row in result:
+                summ += (row.info.h * row.info.w * row.info.l) * row.amount
+                
+                
+            return result
+            
             
             
