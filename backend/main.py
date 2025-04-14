@@ -45,7 +45,7 @@ async def upload_files(file1: UploadFile = File(...), file2: UploadFile = File(.
     info = read_excel(file2.file)
     await Orm.insert_or_upd_info(info)   
     order_id = await Orm.insert_order(order)
-    await Orm.calc_time_and_volume(order_id)
+    return JSONResponse(status_code=200, content={"volume": await Orm.calc_time_and_volume(order_id)})
     
     # return {"data1": data1, "data2": data2}
     # except Exception as e:

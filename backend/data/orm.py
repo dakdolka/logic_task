@@ -22,6 +22,7 @@ class Orm:
     @staticmethod
     async def insert_or_upd_info(info):
         async with async_session_factory() as session:
+            async_engine.echo = False
             info = info[['Наименование', 'Артикул', 'Упаковка высота (мм)', "Упаковка длина (см)", "Упаковка ширина (см)", "УПАКОВКА FBO (Общие)" ]]
             data = info.values.tolist()
             dop = []
@@ -55,10 +56,12 @@ class Orm:
                     await session.execute(insert(Info).values(**row))
                     dop.append(row['id'])
             await session.commit()
+            async_engine.echo = True
             
     @staticmethod
     async def insert_order(order):
         async with async_session_factory() as session:
+            async_engine.echo = False
             order = order[['Артикул', 'Количество', 'Сумма с НДС']]
             order_id = await session.execute(func.count(Order.id))
             order_id = order_id.scalar() + 1
@@ -80,6 +83,7 @@ class Orm:
                 if row['info_id'] in temp_inf:
                     await session.execute(insert(OrdderConstructor).values(row))
             await session.commit()
+            async_engine.echo = True
             return order_id
             
     
@@ -96,9 +100,7 @@ class Orm:
             summ = 0
             for row in result:
                 summ += (row.info.h * row.info.w * row.info.l) * row.amount
-                
-                
-            return result
+            return summ // 1000
             
             
             
