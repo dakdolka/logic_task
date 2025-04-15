@@ -22,7 +22,7 @@ services:
       MYSQL_USER: 'dak'
       MYSQL_PASSWORD: '200209318Dak()'
     ports:
-      - "192.168.71.128:3307:3306"
+      - "localhost:3307:3306"
     volumes:
       - mysql-data:/var/lib/mysql
     networks:
@@ -31,7 +31,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "192.168.71.128:8000:8000"
+      - "localhost:8000:8000"
     networks:
       - dev
     depends_on:
