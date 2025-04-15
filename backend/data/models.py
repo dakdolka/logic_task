@@ -8,8 +8,8 @@ import enum, datetime
 from typing import Annotated, Optional 
 
 class pack(enum.Enum):
-    yes = 'yes'
-    no = 'no'
+    yes = 'Да'
+    no = 'Нет'
     
 
 class Info(Base):

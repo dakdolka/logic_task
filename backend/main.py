@@ -31,9 +31,8 @@ def read_excel(file):
     df = pd.read_excel(file)
     return df
     
-@app.get("/test")
+@app.get("/")
 async def root():
-    
     return {"message": "Hello World"}
 
 
@@ -52,5 +51,6 @@ async def upload_files(file1: UploadFile = File(...), file2: UploadFile = File(.
     #     return JSONResponse(status_code=400, content={"message": str(e)})
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="127.0.0.1", port=8000)
+    uvicorn.run(app, host="0.0.0.0", port=8000)
+
 

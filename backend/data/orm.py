@@ -4,7 +4,7 @@ from sqlalchemy import text, insert, select, func, cast, Integer, and_, update
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from data.database import Base, async_engine, async_session_factory
-from data.models import Info, OrdderConstructor, Order
+from data.models import Info, OrdderConstructor, Order, pack
 import pandas as pd
 
 
@@ -36,7 +36,7 @@ class Orm:
                         'h': data[i][2] if not pd.isna(data[i][2]) else 0,
                         'w': data[i][4] if not pd.isna(data[i][4]) else 0,
                         'l': data[i][3] if not pd.isna(data[i][3]) else 0,
-                        'is_packed': data[i][5]
+                        'is_packed': pack(data[i][5])
                     }
                     dop.append(data[i])
             data = dop
