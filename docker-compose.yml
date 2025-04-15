@@ -34,6 +34,9 @@ services:
       - "192.168.71.128:8000:8000"
     networks:
       - dev
+    depends_on:
+      - db
+    
 
   frontend:
     build: ./frontend
