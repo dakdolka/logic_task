@@ -1,4 +1,5 @@
 /.venv
 /src
 /test_xsls.py
-backend\data\__pycache__
+backend/data/__pycache__
+backend/data/results/

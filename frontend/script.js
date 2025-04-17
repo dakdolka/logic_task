@@ -20,24 +20,28 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   // Функция для отправки файлов
-    function uploadFiles(file1, file2) {
-      const formData = new FormData();
-      formData.append('file1', file1);
-      formData.append('file2', file2);
-
-      fetch('http://localhost:8000/api/upload', {
-        method: 'POST',
-        body: formData
-      })
-      .then(res => res.json())
-      .then(data => {
-        alert('Общий объем: ' + data.volume + 'л');
-      })
-      .catch(err => {
-        console.error(err);
-        alert('Ошибка при загрузке');
-      });
-    }
+  function uploadFiles(file1, file2) {
+    const formData = new FormData();
+    formData.append('file1', file1);
+    formData.append('file2', file2);
+  
+    fetch('http://127.0.0.1:8000/api/upload', {
+      method: 'POST',
+      body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+      alert("Файлы загружены. Теперь можно получить результат.");
+  
+      // Показываем кнопку “Получить результат”
+      const resultBtn = document.getElementById("get-result-btn");
+      resultBtn.classList.remove("hidden");
+    })
+    .catch(err => {
+      console.error(err);
+      alert('Ошибка при загрузке');
+    });
+  }
 
   // Обработчик для кнопки отправки файлов
   uploadButton.addEventListener('click', function() {
@@ -122,14 +126,37 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 });
 
+async function getResultFile() {
+  try {
+    // Выполняем запрос
+    const response = await fetch('http://127.0.0.1:8000/api/get_res');
+    
+    // Проверяем статус ответа
+    if (!response.ok) {
+      throw new Error('Ошибка при получении файла'); // Генерируем ошибку, если ответ не OK
+    }
 
-// elem = document.getElementById('time');
+    // Получаем заголовок Content-Disposition
+    const name = response.headers.get('Content-Disposition');
+    console.log(name);
 
-// async function update() {
-//     let res = await fetch('/api/upload');
-//     let json = await res.json();
-//     elem.innerHTML = json.message;
-// }
+    // Преобразуем ответ в blob
+    const blob = await response.blob();
+    console.log(blob);
+
+    // Создаем объект URL для загрузки файла
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = name; // Используем имя из заголовка для скачивания
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  } catch (err) {
+    // Обработка ошибок
+    console.error(err);  // Логируем ошибку
+    alert('Ошибка при скачивании файла');  // Показываем сообщение пользователю
+  }
+}
 
 
-// setInterval(update, 1000);

@@ -1,6 +1,6 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, File, UploadFile
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, StreamingResponse
 import pandas as pd
 from io import BytesIO
 import uvicorn
@@ -42,13 +42,24 @@ async def upload_files(file1: UploadFile = File(...), file2: UploadFile = File(.
     # try:
     order = read_excel(file1.file)
     info = read_excel(file2.file)
-    await Orm.insert_or_upd_info(info)   
-    order_id = await Orm.insert_order(order)
-    return JSONResponse(status_code=200, content={"volume": await Orm.calc_time_and_volume(order_id)})
+    await Orm.insert_or_upd_info(info)
+    order_id = await Orm.get_order_num()   
+    await Orm.insert_order(order)
+    return JSONResponse(status_code=200, content=await Orm.calc_time_and_volume(order_id + 1))
     
-    # return {"data1": data1, "data2": data2}
-    # except Exception as e:
-    #     return JSONResponse(status_code=400, content={"message": str(e)})
+@app.get("/get_res")
+async def get_res():
+    order_id = await Orm.get_order_num()
+    file_path = await Orm.calc_time_and_volume(order_id, flag=True)
+    return StreamingResponse(
+        open(file_path, "rb"),
+        media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        headers={
+            "Content-Disposition": f"result{order_id}.xlsx",
+            "Access-Control-Expose-Headers": "Content-Disposition"
+        }
+    )
+
     
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

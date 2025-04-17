@@ -1,3 +1,4 @@
+import os
 from fastapi import HTTPException
 from sqlalchemy import text, insert, select, func, cast, Integer, and_, update
 # from db.models import metadata_obj
@@ -6,6 +7,8 @@ from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from data.database import Base, async_engine, async_session_factory
 from data.models import Info, OrdderConstructor, Order, pack
 import pandas as pd
+from openpyxl import load_workbook
+from openpyxl.styles import PatternFill
 
 
 class Orm:
@@ -23,7 +26,7 @@ class Orm:
     async def insert_or_upd_info(info):
         async with async_session_factory() as session:
             async_engine.echo = False
-            info = info[['Наименование', 'Артикул', 'Упаковка высота (мм)', "Упаковка длина (см)", "Упаковка ширина (см)", "УПАКОВКА FBO (Общие)" ]]
+            info = info[['Наименование', 'Артикул', 'Упаковка высота (мм)', "Упаковка длина (см)", "Упаковка ширина (см)", "УПАКОВКА FBO (Общие)"]]
             data = info.values.tolist()
             dop = []
             for i in range(len(data)):
@@ -85,11 +88,16 @@ class Orm:
             await session.commit()
             async_engine.echo = True
             return order_id
-            
-    
-    
+        
     @staticmethod
-    async def calc_time_and_volume(order_id):
+    async def get_order_num():
+        async with async_session_factory() as session:
+            order_id = await session.execute(func.count(Order.id))
+            order_id = order_id.scalar()
+            return order_id
+
+    @staticmethod
+    async def calc_time_and_volume(order_id, flag=False):   
         async with async_session_factory() as session:
             query = (
                 select(OrdderConstructor).where(OrdderConstructor.order_id == order_id).options(
@@ -97,12 +105,82 @@ class Orm:
                 )
             result = await session.execute(query)
             result = result.scalars().all()
-            summ = 0
+            print(result)
+            build = 0
             #TODO объём считается так, а часы: 100л/ч - упаковка т.е. если товар упаковываемый - на него тратится время сверх, 200л/ч - сборка
             #в эксельке выводить товар: описание артикул, количество - габариты, литраж если есть, если нет - красным
+            ans = {}
+            ans['data'] = {}
             for row in result:
-                summ += (row.info.h * row.info.w * row.info.l) * row.amount
-            return (summ // 1000)
+                build += (row.info.h * row.info.w * row.info.l) * row.amount
+            build /= 1000
+            packing = 0
+            for row in result:
+                if row.info.is_packed == pack.yes:
+                    packing += (row.info.h * row.info.w * row.info.l) * row.amount
+            packing /= 1000
+            ans['Сборка'] = build
+            ans['Упаковка'] = packing
+            ans['Сборка время'] = build / 200
+            ans['Упаковка время'] = packing / 100
+            ans['Всего'] = ans['Сборка время'] + ans['Упаковка время']
+            if flag:
+                for i in range(len(result)):
+                    elem = result[i]
+                    ans['data'][i] = {
+                        'N': i + 1,
+                        'Номенклатура': elem.info.name,
+                        'Артикул': elem.info.id,
+                        'Количество': elem.amount,
+                        'Габариты': f'{elem.info.h}х{elem.info.w}х{elem.info.l}',
+                        'Литраж': f'{elem.info.h * elem.info.w * elem.info.l / 1000}',
+                        'Сборка': {elem.info.h * elem.info.w * elem.info.l / 1000} if elem.info.is_packed == pack.yes else 0,
+                        'Упаковка': elem.info.is_packed.value
+                    }
+
+                df = pd.DataFrame(ans['data'].values())
+                df.loc[0, 'Сборка всего'] = ans['Сборка']
+                df.loc[0, 'Упаковка всего'] = ans['Упаковка']
+                df.loc[0, 'Сборка время'] = ans['Сборка время']
+                df.loc[0, 'Упаковка время'] = ans['Упаковка время']
+                df.loc[0, 'Всего время'] = ans['Всего']
+                BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+                SAVE_DIR = os.path.join(BASE_DIR, 'results')
+                os.makedirs(SAVE_DIR, exist_ok=True)
+                file_path = os.path.join(SAVE_DIR, 'output.xlsx')
+                df.to_excel(file_path, index=False)
+                wb = load_workbook(file_path)
+                ws = wb.active
+                red_fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")
+                litraz_col = None
+                for col_idx, cell in enumerate(ws[1], start=1):
+                    if cell.value == "Упаковка":
+                        litraz_col = col_idx
+                        break
+
+                if litraz_col:
+                    for row in range(2, ws.max_row + 1):
+                        val = ws.cell(row=row, column=litraz_col).value
+                        try:
+                            if float(val) == 0:
+                                for col in range(1, litraz_col + 1):
+                                    ws.cell(row=row, column=col).fill = red_fill
+                        except:
+                            pass
+
+                wb.save(file_path)
+                return file_path
+            else:
+                return {
+                    'Сборка': build,
+                    'Упаковка': packing,
+                    'Сборка время': build / 200,
+                    'Упаковка время': packing / 100,
+                    'Всего': ans['Сборка время'] + ans['Упаковка время']
+                }
+            
+                    
+                
             
             
             
