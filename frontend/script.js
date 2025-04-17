@@ -31,7 +31,7 @@ document.addEventListener('DOMContentLoaded', function () {
       })
       .then(res => res.json())
       .then(data => {
-        alert('Общий объем: ' + data.volume + 'л');  // Можешь изменить на alert или просто выполнить другие действия
+        alert('Общий объем: ' + data.volume + 'л');
       })
       .catch(err => {
         console.error(err);

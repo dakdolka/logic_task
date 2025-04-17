@@ -98,9 +98,11 @@ class Orm:
             result = await session.execute(query)
             result = result.scalars().all()
             summ = 0
+            #TODO объём считается так, а часы: 100л/ч - упаковка т.е. если товар упаковываемый - на него тратится время сверх, 200л/ч - сборка
+            #в эксельке выводить товар: описание артикул, количество - габариты, литраж если есть, если нет - красным
             for row in result:
                 summ += (row.info.h * row.info.w * row.info.l) * row.amount
-            return summ // 1000
+            return (summ // 1000)
             
             
             
