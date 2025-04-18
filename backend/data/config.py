@@ -2,15 +2,15 @@ from pydantic_settings import BaseSettings
 import os
 
 class Settings(BaseSettings):
-    db_host: str
-    db_name: str
-    user: str
-    password: str
-    db_port: str
-    # MYSQL_ROOT_PASSWORD: str
-    # MYSQL_DATABASE: str
-    # MYSQL_USER: str
-    # MYSQL_PASSWORD: str
+    # db_host: str
+    # db_name: str
+    # user: str
+    # password: str
+    # db_port: str
+    MYSQL_ROOT_PASSWORD: str
+    MYSQL_DATABASE: str
+    MYSQL_USER: str
+    MYSQL_PASSWORD: str
     
     @property
     def db_url(self):
