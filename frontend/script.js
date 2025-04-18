@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.append('file1', file1);
     formData.append('file2', file2);
   
-    fetch('http://localhost/api/upload', {
+    fetch('http://192.168.88.18/api/upload', {
       method: 'POST',
       body: formData
     })
