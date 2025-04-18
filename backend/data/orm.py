@@ -17,7 +17,7 @@ class Orm:
     async def create_all():
         async with async_engine.begin() as conn:
             async_engine.echo = False
-            await conn.run_sync(Base.metadata.drop_all)
+            # await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
             print('tables created')
             
@@ -171,19 +171,15 @@ class Orm:
                         try:
                             if str(dop_val) == 'Да':
                                 for col in range(1, pack_col + 1):
-                                    ws.cell(row=row, column=col).fill = red_fill
+                                    ws.cell(row=row, column=col).fill = blue_fill
                             if float(val) == 0:
                                 for col in range(1, pack_col + 1):
-                                    ws.cell(row=row, column=col).fill = blue_fill
+                                    ws.cell(row=row, column=col).fill = red_fill
                         except:
                             pass
                 for col_idx, cell in enumerate(ws[1], start=1):
                     ws.column_dimensions[get_column_letter(col_idx)].width = len(str(cell.value)) + 5
                 ws.column_dimensions['C'].width = 60
-                
-                
-                
-
                 wb.save(file_path)
                 return file_path
             else:
