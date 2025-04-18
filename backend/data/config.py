@@ -2,7 +2,6 @@ from pydantic_settings import BaseSettings
 import os
 
 class Settings(BaseSettings):
-    
     db_host: str
     db_name: str
     user: str

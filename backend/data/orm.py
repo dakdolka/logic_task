@@ -9,6 +9,7 @@ from data.models import Info, OrdderConstructor, Order, pack
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
+from openpyxl.utils import get_column_letter
 
 
 class Orm:
@@ -16,7 +17,7 @@ class Orm:
     async def create_all():
         async with async_engine.begin() as conn:
             async_engine.echo = False
-            await conn.run_sync(Base.metadata.drop_all)
+            # await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
             print('tables created')
             
@@ -25,6 +26,7 @@ class Orm:
     @staticmethod
     async def insert_or_upd_info(info):
         async with async_session_factory() as session:
+            print('upd_info')
             async_engine.echo = False
             info = info[['Наименование', 'Артикул', 'Упаковка высота (мм)', "Упаковка длина (см)", "Упаковка ширина (см)", "УПАКОВКА FBO (Общие)"]]
             data = info.values.tolist()
@@ -63,6 +65,7 @@ class Orm:
             
     @staticmethod
     async def insert_order(order):
+        print('ins_order')
         async with async_session_factory() as session:
             async_engine.echo = False
             order = order[['Артикул', 'Количество', 'Сумма с НДС']]
@@ -80,9 +83,9 @@ class Orm:
             } 
             temp_inf = await session.execute(select(Info.id))
             temp_inf = temp_inf.scalars().all()
-            print(temp_inf)
+            # print(temp_inf)
             for row in data:
-                print(row)
+                # print(row)
                 if row['info_id'] in temp_inf:
                     await session.execute(insert(OrdderConstructor).values(row))
             await session.commit()
@@ -105,7 +108,7 @@ class Orm:
                 )
             result = await session.execute(query)
             result = result.scalars().all()
-            print(result)
+            # print(result)
             build = 0
             #TODO объём считается так, а часы: 100л/ч - упаковка т.е. если товар упаковываемый - на него тратится время сверх, 200л/ч - сборка
             #в эксельке выводить товар: описание артикул, количество - габариты, литраж если есть, если нет - красным
@@ -121,26 +124,26 @@ class Orm:
             packing /= 1000
             ans['Сборка'] = build
             ans['Упаковка'] = packing
-            ans['Сборка время'] = build / 200
-            ans['Упаковка время'] = packing / 100
+            ans['Сборка время'] = build / 200 * 60
+            ans['Упаковка время'] = packing / 100 * 60
             ans['Всего'] = ans['Сборка время'] + ans['Упаковка время']
             if flag:
                 for i in range(len(result)):
                     elem = result[i]
                     ans['data'][i] = {
                         'N': i + 1,
-                        'Номенклатура': elem.info.name,
                         'Артикул': elem.info.id,
+                        'Номенклатура': elem.info.name,
                         'Количество': elem.amount,
                         'Габариты': f'{elem.info.h}х{elem.info.w}х{elem.info.l}',
-                        'Литраж': f'{elem.info.h * elem.info.w * elem.info.l / 1000}',
-                        'Сборка': {elem.info.h * elem.info.w * elem.info.l / 1000} if elem.info.is_packed == pack.yes else 0,
+                        'Литраж': elem.info.h * elem.info.w * elem.info.l / 1000 * elem.amount,
+                        'Сборка': elem.info.h * elem.info.w * elem.info.l / 1000,
                         'Упаковка': elem.info.is_packed.value
                     }
 
                 df = pd.DataFrame(ans['data'].values())
-                df.loc[0, 'Сборка всего'] = ans['Сборка']
-                df.loc[0, 'Упаковка всего'] = ans['Упаковка']
+                df.loc[0, 'Сборка(л)'] = ans['Сборка']
+                df.loc[0, 'Упаковка(л)'] = ans['Упаковка']
                 df.loc[0, 'Сборка время'] = ans['Сборка время']
                 df.loc[0, 'Упаковка время'] = ans['Упаковка время']
                 df.loc[0, 'Всего время'] = ans['Всего']
@@ -152,21 +155,29 @@ class Orm:
                 wb = load_workbook(file_path)
                 ws = wb.active
                 red_fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")
-                litraz_col = None
+                pack_col = None
+                liter_col = None
                 for col_idx, cell in enumerate(ws[1], start=1):
+                    if cell.value == "Литраж":
+                        liter_col = col_idx
                     if cell.value == "Упаковка":
-                        litraz_col = col_idx
+                        pack_col = col_idx
                         break
-
-                if litraz_col:
+                if pack_col:
                     for row in range(2, ws.max_row + 1):
-                        val = ws.cell(row=row, column=litraz_col).value
+                        val = ws.cell(row=row, column=liter_col).value
                         try:
                             if float(val) == 0:
-                                for col in range(1, litraz_col + 1):
+                                for col in range(1, pack_col + 1):
                                     ws.cell(row=row, column=col).fill = red_fill
                         except:
                             pass
+                for col_idx, cell in enumerate(ws[1], start=1):
+                    ws.column_dimensions[get_column_letter(col_idx)].width = len(str(cell.value)) + 5
+                ws.column_dimensions['C'].width = 60
+                
+                
+                
 
                 wb.save(file_path)
                 return file_path
