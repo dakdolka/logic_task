@@ -17,7 +17,7 @@ class Orm:
     async def create_all():
         async with async_engine.begin() as conn:
             async_engine.echo = False
-            # await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
             print('tables created')
             
@@ -157,6 +157,7 @@ class Orm:
                 red_fill = PatternFill(start_color="FF9999", end_color="FF9999", fill_type="solid")
                 pack_col = None
                 liter_col = None
+                blue_fill = PatternFill(start_color="62b8ff", end_color='62b8ff', fill_type='solid' )
                 for col_idx, cell in enumerate(ws[1], start=1):
                     if cell.value == "Литраж":
                         liter_col = col_idx
@@ -166,10 +167,14 @@ class Orm:
                 if pack_col:
                     for row in range(2, ws.max_row + 1):
                         val = ws.cell(row=row, column=liter_col).value
+                        dop_val = ws.cell(row=row, column=pack_col).value
                         try:
-                            if float(val) == 0:
+                            if str(dop_val) == 'Да':
                                 for col in range(1, pack_col + 1):
                                     ws.cell(row=row, column=col).fill = red_fill
+                            if float(val) == 0:
+                                for col in range(1, pack_col + 1):
+                                    ws.cell(row=row, column=col).fill = blue_fill
                         except:
                             pass
                 for col_idx, cell in enumerate(ws[1], start=1):

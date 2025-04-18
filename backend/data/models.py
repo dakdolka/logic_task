@@ -16,9 +16,9 @@ class Info(Base):
     __tablename__ = "info"
     id: Mapped[str_256] = mapped_column(primary_key=True)
     name: Mapped[str_256]
-    h: Mapped[Optional[int]] = mapped_column(default=None)
-    w: Mapped[Optional[int]] = mapped_column(default=None)
-    l: Mapped[Optional[int]] = mapped_column(default=None)
+    h: Mapped[Optional[float]] = mapped_column(default=None)
+    w: Mapped[Optional[float]] = mapped_column(default=None)
+    l: Mapped[Optional[float]] = mapped_column(default=None)
     is_packed: Mapped[pack]
     orders: Mapped[list['OrdderConstructor']] = relationship(back_populates="info")
     
