@@ -25,7 +25,7 @@ document.addEventListener('DOMContentLoaded', function () {
     formData.append('file1', file1);
     formData.append('file2', file2);
   
-    fetch('http://127.0.0.1:8000/api/upload', {
+    fetch('http://localhost:8000/api/upload', {
       method: 'POST',
       body: formData
     })
@@ -129,7 +129,7 @@ document.addEventListener('DOMContentLoaded', function () {
 async function getResultFile() {
   try {
     // Выполняем запрос
-    const response = await fetch('http://127.0.0.1:8000/api/get_res');
+    const response = await fetch('http://localhost:8000/api/get_res');
     
     // Проверяем статус ответа
     if (!response.ok) {
