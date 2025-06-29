@@ -5,11 +5,12 @@ from sqlalchemy import text, insert, select, func, cast, Integer, and_, update
 from sqlalchemy.orm import aliased
 from sqlalchemy.orm import joinedload, selectinload, contains_eager
 from data.database import Base, async_engine, async_session_factory
-from data.models import Info, OrdderConstructor, Order, pack
+from data.models import Info, OrdderConstructor, Order, pack, Admin
 import pandas as pd
 from openpyxl import load_workbook
 from openpyxl.styles import PatternFill
 from openpyxl.utils import get_column_letter
+from data.config import settings
 
 
 class Orm:
@@ -17,11 +18,13 @@ class Orm:
     async def create_all():
         async with async_engine.begin() as conn:
             async_engine.echo = False
-            # await conn.run_sync(Base.metadata.drop_all)
+            await conn.run_sync(Base.metadata.drop_all)
             await conn.run_sync(Base.metadata.create_all)
             print('tables created')
-            
             async_engine.echo = True
+            async with async_session_factory() as session:
+                await session.execute(insert(Admin).values(id=1, login=settings.admin_login, password=settings.admin_password))
+                await session.commit()
     
     @staticmethod
     async def insert_or_upd_info(info):
@@ -190,9 +193,14 @@ class Orm:
                     'Упаковка время': packing / 100,
                     'Всего': ans['Сборка время'] + ans['Упаковка время']
                 }
-            
-                    
                 
-            
-            
-            
+    @staticmethod
+    async def check_if_admin(login: str, passw: str ):
+        async with async_session_factory() as session:
+            result = await session.execute(select(Admin))
+            res = result.scalars().all()
+            for elem in res:
+                if elem.login == login and elem.password == passw:
+                    return True
+            return False
+

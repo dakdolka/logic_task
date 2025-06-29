@@ -38,6 +38,13 @@ class OrdderConstructor(Base):
     price: Mapped[int]
     order: Mapped[Order] = relationship(back_populates="order_constructor")
     info: Mapped[Info] = relationship(back_populates="orders")
+
+
+class Admin(Base):
+    __tablename__ = "admin"
+    id: Mapped[int] = mapped_column(primary_key=True)
+    login: Mapped[str_256]
+    password: Mapped[str_256]
     
 
     

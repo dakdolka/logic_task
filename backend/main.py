@@ -1,5 +1,5 @@
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, File, UploadFile
+from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import JSONResponse, StreamingResponse
 import pandas as pd
 from io import BytesIO
@@ -7,7 +7,7 @@ import uvicorn
 from fastapi.middleware.cors import CORSMiddleware
 from data.orm import Orm
 import xlrd
-
+from pydantic import BaseModel
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -24,6 +24,10 @@ app.add_middleware(
     allow_methods=["*"],  # Разрешены все методы HTTP
     allow_headers=["*"],  # Разрешены все заголовки
 )
+
+class LoginData(BaseModel):
+    username: str
+    password: str
 
 def read_excel(file):
     cont = file.read()
@@ -60,8 +64,15 @@ async def get_res():
         }
     )
 
+@app.post("/login")
+async def login(data: LoginData):
+    res = await Orm.check_if_admin(data.username, data.password)
+    if res:
+        return JSONResponse(status_code=200, content=res)
+    raise HTTPException(status_code=400, detail="Неверный логин или пароль")
+
     
 if __name__ == "__main__":
-    uvicorn.run(app, host="0.0.0.0", port=8000)
+    uvicorn.run(app, host="localhost", port=8000)
 
 

@@ -1,36 +1,40 @@
-<!DOCTYPE html>
-<html lang="ru">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Pack liters and time</title>
-  <link rel="stylesheet" href="style.css">
-</head>
-<body>
+  <!DOCTYPE html>
+  <html lang="ru">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pack liters and time</title>
+    <link rel="stylesheet" href="style.css">
+  </head>
+  <body>
+    <h1>Загрузите или перетащите файлы</h1>
+    <form class="login-form" id="login-form" method="post">
+      <input type="text" name="username" placeholder="username">
+      <input type="password" name="password" placeholder="password">
+      <button type="submit">Login</button>
+    </form>
+    <div class="upload-container">
+      <!-- Дроп-зоны для файлов -->
+      <div class="dropzone" id="dropzone1">
+        <div id="fileName1" class="file-name">Заказ</div>
+        <input type="file" id="file1">
+        <button class="file-select-btn" id="selectFile1">Выбрать файл заказа</button>
+      </div>
 
-  <h1>Загрузите или перетащите файлы</h1>
-  <div class="upload-container">
-    <!-- Дроп-зоны для файлов -->
-    <div class="dropzone" id="dropzone1">
-      <div id="fileName1" class="file-name">Заказ</div>
-      <input type="file" id="file1">
-      <button class="file-select-btn" id="selectFile1">Выбрать файл заказа</button>
+      <div class="dropzone" id="dropzone2">
+        <div id="fileName2" class="file-name">Номенклатура</div>
+        <input type="file" id="file2">
+        <button class="file-select-btn" id="selectFile2">Выбрать файл номенклатуры</button>
+      </div>
     </div>
 
-    <div class="dropzone" id="dropzone2">
-      <div id="fileName2" class="file-name">Номенклатура</div>
-      <input type="file" id="file2">
-      <button class="file-select-btn" id="selectFile2">Выбрать файл номенклатуры</button>
-    </div>
-  </div>
-
-  <!-- Кнопка для отправки файлов на сервер -->
-  <button id="uploadAllFiles" class="upload-btn">Отправить файлы</button>
-  <button id="get-result-btn" class="hidden result-button" onclick="getResultFile()">Получить результат</button>
+    <!-- Кнопка для отправки файлов на сервер -->
+    <button id="uploadAllFiles" class="upload-btn">Отправить файлы</button>
+    <button id="get-result-btn" class="hidden result-button" onclick="getResultFile()">Получить результат</button>
 
 
-  <div id="time"></div>
+    <div id="time"></div>
 
-  <script src="script.js"></script>
-</body>
-</html>
+    <script src="script.js"></script>
+  </body>
+  </html>
