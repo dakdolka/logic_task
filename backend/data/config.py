@@ -16,7 +16,7 @@ class Settings(BaseSettings):
     
     @property
     def db_url(self):
-        # return f"mysql+asyncmy://dak:200209318Dak()@db:3306/papa_task"?
-        return f"mysql+asyncmy://{self.user}:{self.password}@{self.db_host}:{self.db_port}/{self.db_name}"
+        return f"mysql+asyncmy://dak:200209318Dak()@db:3306/papa_task"
+        # return f"mysql+asyncmy://{self.user}:{self.password}@{self.db_host}:{self.db_port}/{self.db_name}"
         
 settings = Settings()
