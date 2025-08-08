@@ -36,7 +36,7 @@ services:
       - dev
     depends_on:
       - db
-    env-file:
+    env_file:
       - .env
     
 
