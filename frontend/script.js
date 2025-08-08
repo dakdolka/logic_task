@@ -159,7 +159,7 @@ async function getResultFile() {
 
 async function login(username, password) {
   try {
-    const response = await fetch('http://backend:8000/api/login', {
+    const response = await fetch('http://localhost:8000/api/login', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
