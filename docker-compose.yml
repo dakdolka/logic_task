@@ -31,7 +31,7 @@ services:
   backend:
     build: ./backend
     ports:
-      - "127.0.0.3:8000:8000"
+      - "192.168.88.18:8000:8000"
     networks:
       - dev
     depends_on:
